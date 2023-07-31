@@ -1,0 +1,36 @@
+version: "3"
+services:
+  db:
+    build: ./db
+    hostname: db
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: test
+    restart: always
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    hostname: nginx
+    ports:
+        - "8080:80"
+    depends_on:
+        - web
+
+  web:
+    build: ./web
+    hostname: nodejsserver
+    command: sh -c './wait-for-it.sh -t 0 db:3306 -- npm start'
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+      MYSQL_HOST: db
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    restart: on-failure
+
+
